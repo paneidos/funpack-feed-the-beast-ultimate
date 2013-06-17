@@ -1,0 +1,40 @@
+#!/bin/bash
+# usage: bin/compile <build-dir> <cache-dir>
+
+set -eo pipefail
+
+mkdir -p "$1" "$2"
+build=$(cd "$1/" && pwd)
+cache=$(cd "$2/" && pwd)
+funpack=$(cd $(dirname $0)/.. && pwd)
+
+ver="1.1.2"
+url="http://www.creeperrepo.net/direct/FTB2/5bc78cc3369e18f0a9846315cee0d943/modpacks%5EUltimate%5E${ver//./_}%5EUltimate_Server.zip"
+
+if test -f $cache/ftb-$ver/ftbserver.jar
+then
+  echo "-----> Using Feed The Beast Ultimate Version $ver"
+else
+  rm -rf $cache/*
+  mkdir -p $cache/ftb-$ver
+  cd $cache/ftb-$ver
+  echo -n "-----> Installing Feed The Beast Ultimate Version $ver"
+  curl -L $url -o ftb.zip
+  unzip ftb.zip
+  rm ftb.zip
+  echo " done"
+fi
+mkdir -p $build/ftb-$ver
+cp -R $cache/ftb-$ver/* $build/ftb-$ver
+
+cd $funpack
+mkdir -p $build/bin
+cp bin/run $build/bin/run
+cp bin/import $build/bin/import
+
+cp -R lib $build
+cp -R templates $build
+
+cp Gemfile $build/Gemfile
+cp Gemfile.lock $build/Gemfile.lock
+cp funpack.json $build/funpack.json
